@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BaseActivityStyle">
+        <item name="android:windowBackground">@color/background_activity</item>
+        <item name="android:statusBarColor">@color/app_title_background</item>
+    </style>
+</resources>
