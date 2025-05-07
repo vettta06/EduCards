@@ -16,4 +16,6 @@ local.properties
 
 # Project exclude paths
 
+
 /gradle/
+
