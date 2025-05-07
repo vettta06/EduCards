@@ -8,9 +8,8 @@
     <color name="button_back">#FB8159</color>
     <color name="button_continue">#DE6A8321</color>
     <color name="app_title_background">#DE6A8321</color>
-    <color name="card_default">#E8F5E9</color> <!-- Светло-пастельный зеленый -->
+    <color name="card_default">#DEE6F6B6</color>
 
-    <!-- Дополнительные цвета -->
     <color name="white">#FEFEFE</color>
     <color name="text_primary">#000000</color>
 </resources>
