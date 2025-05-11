@@ -10,7 +10,7 @@ private val EduCardsColorScheme = lightColorScheme(
     background = Color(0xFFF2EBE5),
     onPrimary = Color(0xFF000000),
     onSecondary = Color(0xFF000000),
-    onBackground = Color(0xFF000000),
+    onBackground = Color(0xFF474a51),
     onSurface = Color(0xFF000000),
     onTertiary = Color(0xFF000000),
 )

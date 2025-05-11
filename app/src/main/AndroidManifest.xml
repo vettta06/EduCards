@@ -19,7 +19,6 @@
         android:theme="@style/Theme.EduCards"
         tools:targetApi="31">
 
-        <!-- Главная активность -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -28,7 +27,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Дополнительные активности -->
+        </activity>
         <activity
             android:name=".UserCardsActivity"
             android:exported="true"
@@ -45,6 +44,10 @@
             android:name=".StatisticsActivity"
             android:exported="true"
             android:label="Статистика" />
+        <activity
+            android:name=".ArchivedCardsActivity"
+            android:exported="true"
+            android:label="Архив" />
         <receiver
             android:name=".CardNotificationReceiver"
             android:exported="false">

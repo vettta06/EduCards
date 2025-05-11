@@ -33,7 +33,9 @@ class StatisticsViewModel(private val statsDao: StatsDao) : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -29) }
+                val calendar = Calendar.getInstance().apply {
+                    set(Calendar.DAY_OF_MONTH, 1)
+                }
                 val daily = statsDao.getStatsBetweenDates(
                     getFormattedDate(calendar.time),
                     getFormattedDate(Date())
@@ -56,7 +58,10 @@ class StatisticsViewModel(private val statsDao: StatsDao) : ViewModel() {
     }
     private fun fillMissingDays(stats: List<DailyStat>): List<DailyStat> {
         val filled = mutableListOf<DailyStat>()
-        val calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -29) }
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+        }
+
 
         val existingStats = stats.associateBy { it.date }
 
