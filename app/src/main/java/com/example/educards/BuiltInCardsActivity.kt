@@ -49,7 +49,6 @@ class BuiltInCardsActivity : AppCompatActivity() {
                     .filter { !it.isArchived }
                     .filter { it.isDue() }
 
-                // Обновляем позицию безопасно
                 currentPosition = when {
                     cards.isEmpty() -> -1
                     currentPosition >= cards.size -> cards.size - 1
