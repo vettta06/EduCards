@@ -21,4 +21,14 @@ interface CardDao{
 
     @Query("SELECT * FROM cards")
     suspend fun getAllCardsSync(): List<Card>
+
+    @Query("UPDATE cards SET isArchived = 1 WHERE id = :cardId")
+    suspend fun archiveCard(cardId: Int)
+
+    @Query("UPDATE cards SET isArchived = 0 WHERE id = :cardId")
+    suspend fun restoreCard(cardId: Int)
+
+    @Query("SELECT * FROM cards WHERE isArchived = 1")
+    fun getArchivedCards(): Flow<List<Card>>
+
 }

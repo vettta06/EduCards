@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,9 +46,19 @@ class BuiltInCardsActivity : AppCompatActivity() {
             db.cardDao().getAllCards().collect { allCards ->
                 cards = allCards
                     .filter { it.isBuiltIn }
+                    .filter { !it.isArchived }
                     .filter { it.isDue() }
-                currentPosition = if (cards.isNotEmpty()) 0 else -1
-                updateCardDisplay()
+
+                // Обновляем позицию безопасно
+                currentPosition = when {
+                    cards.isEmpty() -> -1
+                    currentPosition >= cards.size -> cards.size - 1
+                    else -> currentPosition.coerceIn(0, cards.size - 1)
+                }
+
+                withContext(Dispatchers.Main) {
+                    updateCardDisplay()
+                }
             }
         }
     }
@@ -57,10 +68,12 @@ class BuiltInCardsActivity : AppCompatActivity() {
             btnNext.setOnClickListener { showNextCard() }
             cardView.setOnClickListener { flipCard() }
             btnBack.setOnClickListener { finish() }
+            btnArchive.setOnClickListener { archiveCurrentCard() }
         }
     }
 
     private fun showPreviousCard() {
+        if (cards.isEmpty()) return
         ratingJob?.cancel()
         if (currentPosition > 0) {
             currentPosition--
@@ -83,7 +96,6 @@ class BuiltInCardsActivity : AppCompatActivity() {
                 .setTitle("Сессия завершена")
                 .setMessage("Вы просмотрели все карточки!")
                 .setPositiveButton("OK") { _, _ ->
-                    // Сброс и обновление интерфейса
                     currentPosition = 0
                     showingQuestion = true
                     updateCardDisplay()
@@ -99,6 +111,7 @@ class BuiltInCardsActivity : AppCompatActivity() {
     }
 
     private fun flipCard() {
+        if (cards.isEmpty()) return
         showingQuestion = !showingQuestion
         if (!showingQuestion) {
             ratingJob?.cancel()
@@ -132,6 +145,9 @@ class BuiltInCardsActivity : AppCompatActivity() {
                         R.color.card_default
                     )
                 )
+                btnPrev.isEnabled = false
+                btnNext.isEnabled = false
+                btnArchive.isEnabled = false
                 return
             }
 
@@ -242,6 +258,26 @@ class BuiltInCardsActivity : AppCompatActivity() {
             } else {
                 dao.insert(Stats(date = today, cardsSolved = 1))
                 Log.d("Stats", "Inserted new stats for date $today: 1 card solved")
+            }
+        }
+    }
+    private fun archiveCurrentCard() {
+        if (cards.isEmpty() || currentPosition !in cards.indices) return // Улучшена проверка
+        val currentCard = cards[currentPosition]
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            db.cardDao().archiveCard(currentCard.id)
+            val updatedCards = db.cardDao().getAllCardsSync()
+                .filter { it.isBuiltIn && !it.isArchived && it.isDue() }
+            withContext(Dispatchers.Main) {
+                cards = updatedCards
+                currentPosition = if (cards.isNotEmpty()) 0 else -1
+                Toast.makeText(
+                    this@BuiltInCardsActivity,
+                    "Карточка перемещена в архив",
+                    Toast.LENGTH_SHORT
+                ).show()
+                updateCardDisplay()
             }
         }
     }

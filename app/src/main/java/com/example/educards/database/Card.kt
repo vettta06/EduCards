@@ -20,13 +20,13 @@ data class Card(
     var eFactor: Double = 2.5,
     var nextReviewDate: Long = System.currentTimeMillis(),
     var currentInterval: Int = 0,
-    val isBuiltIn: Boolean = false
+    val isBuiltIn: Boolean = false,
+    var isArchived: Boolean = false
 ) {
     fun updateEFactor(q: Int) {
         val delta = 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)
         eFactor = (eFactor + delta).coerceIn(1.3, 2.5)
     }
-
     fun updateIntervals(q: Int, context: Context) {
         val newInterval = when (q) {
             5 -> 1 * 24 * 60 * 60 * 1000

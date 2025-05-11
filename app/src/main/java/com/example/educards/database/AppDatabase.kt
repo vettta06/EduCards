@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [Card::class, Stats::class],
-    version = 6
+    version = 7
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun cardDao(): CardDao
@@ -64,7 +64,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // Удаление столбца intervalStep
                 database.execSQL("""
                     CREATE TABLE new_cards (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -73,7 +72,9 @@ abstract class AppDatabase : RoomDatabase() {
                         rating INTEGER NOT NULL DEFAULT 0,
                         eFactor REAL NOT NULL DEFAULT 2.5,
                         nextReviewDate INTEGER NOT NULL,
-                        currentInterval INTEGER NOT NULL DEFAULT 0
+                        currentInterval INTEGER NOT NULL DEFAULT 0,
+                        isBuiltIn INTEGER NOT NULL DEFAULT 0,  // Добавлено
+                        isArchived INTEGER NOT NULL DEFAULT 0 /
                     )
                 """)
 
@@ -89,6 +90,13 @@ abstract class AppDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE new_cards RENAME TO cards")
             }
         }
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE cards ADD COLUMN isArchived INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -96,7 +104,6 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "cards_database"
                 )
-                    .fallbackToDestructiveMigration() // Важно для переустановки
                     .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             GlobalScope.launch(Dispatchers.IO) {
@@ -106,7 +113,7 @@ abstract class AppDatabase : RoomDatabase() {
                             }
                         }
                     })
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .build()
                 INSTANCE = instance
                 instance
@@ -114,7 +121,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
         private fun getDefaultCards(context: Context): List<Card> {
             return listOf(
-                // Лекция 1
                 Card(
                     question = "Что такое вектор?",
                     answer = "Направленный отрезок, характеризующийся величиной и направлением",
@@ -122,7 +128,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Какие бывают виды матриц?",
@@ -131,7 +138,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что такое определитель матрицы?",
@@ -140,7 +148,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Как найти обратную матрицу?",
@@ -149,7 +158,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что такое линейная зависимость векторов?",
@@ -158,10 +168,9 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
-
-                // Лекция 2
                 Card(
                     question = "Как умножить матрицы?",
                     answer = "Строка на столбец, суммируя произведения элементов",
@@ -169,7 +178,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что такое транспонированная матрица?",
@@ -178,7 +188,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Какие свойства у умножения матриц?",
@@ -187,7 +198,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Как вычислить след матрицы?",
@@ -196,7 +208,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что такое блочная матрица?",
@@ -205,10 +218,9 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
-
-                // Лекция 3
                 Card(
                     question = "Что такое СЛАУ?",
                     answer = "Система линейных алгебраических уравнений",
@@ -216,7 +228,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Какие методы решения СЛАУ?",
@@ -225,7 +238,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Когда СЛАУ имеет решение?",
@@ -234,7 +248,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что такое фундаментальная система решений?",
@@ -243,7 +258,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Как определить совместность системы?",
@@ -252,7 +268,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что называется однородной СЛАУ?",
@@ -261,7 +278,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Как связаны размерность пространства решений и ранг матрицы?",
@@ -270,7 +288,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что такое базисный минор матрицы?",
@@ -279,7 +298,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "В чем суть метода Гаусса?",
@@ -288,7 +308,8 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
                 ),
                 Card(
                     question = "Что характеризует определитель матрицы в методе Крамера?",
@@ -297,7 +318,98 @@ abstract class AppDatabase : RoomDatabase() {
                     rating = 0,
                     eFactor = 2.5,
                     currentInterval = 0,
-                    isBuiltIn = true
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Формула скалярного произведения в ортонормированном базисе",
+                    answer = "(x,y) = x₁y₁ + x₂y₂ + ... + xₙyₙ",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Назовите основные типы поверхностей второго порядка",
+                    answer = "Эллипсоид, гиперболоиды, параболоиды, конус, цилиндры",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Как определить тип поверхности по уравнению?",
+                    answer = "Анализ коэффициентов и приведение к канонической форме",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Как привести уравнение кривой к каноническому виду?",
+                    answer = "Методом выделения полных квадратов и поворотом осей",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Что такое аффинная система координат?",
+                    answer = "Задание точки начала отсчета и базиса векторного пространства",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Что такое ортонормированный базис?",
+                    answer = "Базис из попарно ортогональных векторов единичной длины",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Дайте определение евклидова пространства",
+                    answer = "Вещественное векторное пространство с заданным скалярным произведением",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Как привести квадратичную форму к каноническому виду?",
+                    answer = "Методом Лагранжа или ортогональным преобразованием",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
+                ),
+                Card(
+                    question = "Что такое квадратичная форма?",
+                    answer = "Однородный многочлен второй степени от n переменных",
+                    nextReviewDate = System.currentTimeMillis(),
+                    rating = 0,
+                    eFactor = 2.5,
+                    currentInterval = 0,
+                    isBuiltIn = true,
+                    isArchived = false
                 )
             ).map {
                 it.copy(

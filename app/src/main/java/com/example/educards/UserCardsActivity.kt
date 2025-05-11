@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.example.educards.BuiltInCardsActivity
 import com.example.educards.database.AppDatabase
 import com.example.educards.database.Card
 import com.example.educards.database.Stats
@@ -19,6 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class UserCardsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityUserCardsBinding
@@ -57,6 +59,8 @@ class UserCardsActivity : AppCompatActivity() {
             btnNext.setOnClickListener { showNextCard() }
             btnBack.setOnClickListener { finish() }
             tvCardContent.setOnClickListener { flipCard() }
+            btnArchive.setOnClickListener { archiveCurrentCard() }
+
         }
     }
 
@@ -64,9 +68,15 @@ class UserCardsActivity : AppCompatActivity() {
         lifecycleScope.launch {
             db.cardDao().getAllCards().collect { allCards ->
                 cards = allCards
-                    .filter { !it.isBuiltIn } 
+                    .filter { !it.isBuiltIn }
+                    .filter { !it.isArchived }
                     .filter { it.isDue() }
-                currentPosition = if (cards.isNotEmpty()) 0 else -1
+                currentPosition = when {
+                    cards.isEmpty() -> -1
+                    currentPosition >= cards.size -> cards.size - 1
+                    else -> currentPosition.coerceIn(0, cards.size - 1)
+                }
+                //currentPosition = if (cards.isNotEmpty()) 0 else -1
                 updateCardDisplay()
             }
         }
@@ -92,7 +102,8 @@ class UserCardsActivity : AppCompatActivity() {
                     eFactor = 2.5,
                     nextReviewDate = System.currentTimeMillis(),
                     currentInterval = 0,
-                    isBuiltIn = false
+                    isBuiltIn = false,
+                    isArchived = false
                 )
                 lifecycleScope.launch(Dispatchers.IO) {
                     db.cardDao().insert(card)
@@ -301,6 +312,33 @@ class UserCardsActivity : AppCompatActivity() {
                 dao.insert(existing.copy(cardsSolved = existing.cardsSolved + 1))
             } else {
                 dao.insert(Stats(date = today, cardsSolved = 1))
+            }
+        }
+    }
+    private fun archiveCurrentCard() {
+        if (cards.isEmpty() || currentPosition !in cards.indices) return
+        val currentCard = cards[currentPosition]
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            db.cardDao().update(currentCard.copy(isArchived = true))
+            val updatedCards = db.cardDao().getAllCardsSync()
+                .filter { !it.isBuiltIn }
+                .filter { !it.isArchived }
+                .filter { it.isDue() }
+
+            withContext(Dispatchers.Main) {
+                cards = updatedCards
+                currentPosition = when {
+                    cards.isEmpty() -> -1
+                    currentPosition >= cards.size -> cards.size - 1
+                    else -> currentPosition.coerceIn(0, cards.size - 1)
+                }
+                Toast.makeText(
+                    this@UserCardsActivity,
+                    "Карточка перемещена в архив",
+                    Toast.LENGTH_SHORT
+                ).show()
+                updateCardDisplay()
             }
         }
     }

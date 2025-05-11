@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity() {
             R.id.nav_lectures -> openActivity(LecturesActivity::class.java)
             R.id.nav_user_cards -> openActivity(UserCardsActivity::class.java)
             R.id.nav_statistics -> openActivity(StatisticsActivity::class.java)
+            R.id.nav_archive -> openActivity(ArchivedCardsActivity::class.java)
         }
         drawerLayout.closeDrawer(GravityCompat.START)
     }
