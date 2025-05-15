@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.plugin.compose) // Добавлен плагин Compose
+    alias(libs.plugins.kotlin.plugin.compose)
     kotlin("kapt")
 }
 
