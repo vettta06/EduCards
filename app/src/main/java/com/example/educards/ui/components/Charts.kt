@@ -29,7 +29,6 @@ fun LineChart(
         val height = size.height
         val padding = 16.dp.toPx()
 
-        // Рисуем столбцы для каждого дня
         data.forEachIndexed { index, stat ->
             val barHeight = stat.count.toFloat() / maxY * (height - padding * 2)
             drawRect(

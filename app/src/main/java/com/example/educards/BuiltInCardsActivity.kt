@@ -261,7 +261,7 @@ class BuiltInCardsActivity : AppCompatActivity() {
         }
     }
     private fun archiveCurrentCard() {
-        if (cards.isEmpty() || currentPosition !in cards.indices) return // Улучшена проверка
+        if (cards.isEmpty() || currentPosition !in cards.indices) return
         val currentCard = cards[currentPosition]
 
         lifecycleScope.launch(Dispatchers.IO) {
